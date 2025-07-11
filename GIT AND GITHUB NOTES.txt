@@ -1,0 +1,582 @@
+GIT AND GITHUB NOTES
+
+GIT: is a Distributed version control system that allows users to keep track of changes made in a specific repositories(folders)
+
+-Git is a special file system that allows you to store changes made in any folder
+
+-Git can be used without any internet connection
+
+
+
+GITHUB: is Repository hosting service that allowing you to host you committed files in a remote server
+
+- IT stores all the file in a remote server which can be accessed even though the original file has been corrupted.
+
+-It allows you to create remote copies of your git repositories 
+
+- It allows other people to collaborate on your repositories, download, make changes etc.
+
+
+GIT LOW-LEVEL COMMANDS hash-object 
+
+-git hash-object 
+
+using the code and grep it with the echo command 
+
+echo "Hello, Git" | git hash-object --stdin -w
+
+STDIN = STANDARD INPUT 
+
+-w create git object 
+
+gives you this b7aec520dec0a7516c18eb4c68b64ae1eb9b5a5e
+
+
+WHAT IS A HASH FUNCTION
+Hash function always create hash of fixed length
+
+- Hash Function is a one-way function
+- You cannot get the input value that was used to create the hash
+
+- SHASUM WITH ECHO
+echo "Hello, Git" | shasum
+
+c9d5d04925b93d2fb99c73ab2b5869bde7405ca4
+
+--note echo automatically add a line break without using the following command
+
+echo -n "Hello, Git" | shasum
+
+0a2b198f595e55060dec9f0e196c10de86f2ca1c 
+
+seen both of the have the same content but different hashes because the -n remove the line break that was
+added by the echo command
+
+NOW WITH !
+
+echo 'Hello, Git!' | shasum  
+
+e40153b3e43a5ed7fa00ce6bd7a576763b88dab2 
+
+echo -n 'Hello, Git!' | shasum
+
+1d4d7d92f79dc328154dc91424e6e740f8f5a563 
+
+GIT OBJECT TYPES 
+
+- Blob are used to store raw files in git 
+-blob don't store filenames of the source files 
+- Tree
+- Commit 
+- Annotated Tag
+
+GIT LOW LEVEL COMMAND - cat-File
+
+git cat-file -p b7aec520dec0a7516c18eb4c68b64ae1eb9b5a5e gives you the content of the hash file
+Hello, Git
+ 
+git cat-file -s b7aec520dec0a7516c18eb4c68b64ae1eb9b5a5e gives you the size of the hash file 
+11-bites 
+
+git cat-file -t b7aec520dec0a7516c18eb4c68b64ae1eb9b5a5e gives you the type hash file 
+blob 
+
+Every git object have the following:
+
+Content + Object Type + Object Size With Delimiter = Hash 
+
+Content = Hello, Git
+Object Type = blob
+Object Size = 11
+Delimiter  = 0
+
+echo -e "blob 11\0Hello, Git" | shasum
+
+-e interpret the backslash and 0 in bash terminal 
+
+b7aec520dec0a7516c18eb4c68b64ae1eb9b5a5e
+
+TREE
+
+nano temp-tree.txt
+
+100644 blob b7aec520dec0a7516c18eb4c68b64ae1eb9b5a5e	file1.txt
+100644 blob 4400aae52a27341314f423095846b1f215a7cf08	file2.txt
+
+cat ../temp-tree | git mktree
+
+if that cat command did not work used this command:
+
+printf "100644 blob b7aec520dec0a7516c18eb4c68b64ae1eb9b5a5e\tfile1.txt\n100644 blob 4400aae52a27341314f423095846b1f215a7cf08\tfile2.txt\n" > ../temp-tree.txt
+
+now try this again
+
+cat ../temp-tree | git mktree 
+
+you will now have this: 3b95df0ac6365c72e9b0ff6c449645c87e6e1159
+
+Note: use that print function only if you tried this cat ../temp-tree | git mktree
+and did not work.
+
+
+that cat command give you this tree hash 3b95df0ac6365c72e9b0ff6c449645c87e6e1159
+if you:
+git cat-file -t 3b95df0ac6365c72e9b0ff6c449645c87e6e1159
+
+tree
+
+note: it tells you that this hash 3b95df0ac6365c72e9b0ff6c449645c87e6e1159 is a tree
+that point to two blob 
+
+STAGING 
+
+git read-tree 3b95df0ac6365c72e9b0ff6c449645c87e6e1159
+
+the above command put that tree in the staging area(index)
+
+that command put the tree in the staging area, you can find out using the following
+commands:
+
+git status 
+
+git ls-files
+
+git ls-files -s 
+
+100644 b7aec520dec0a7516c18eb4c68b64ae1eb9b5a5e 0       file1.txt
+100644 4400aae52a27341314f423095846b1f215a7cf08 0       file2.txt
+
+GIT CHECKOUT-INDEX -A
+Moving files from the staging area to the working directory(where the .git is)
+use this command:
+
+git checkout-index -a 
+
+
+COMMIT GIT OBJECT TYPE
+
+Configuring commit global configuration
+
+git config --global user.name "ML Massaquoi"
+git config --global user.email "moseslaminmassaquoiofficial@gmail.com"
+
+git config --list
+
+How to commit file:
+
+git commit -m "my first commit" 
+
+git commit -a -m "Description of the commit" 
+
+Note: The -a automatically add the file(s) committed in the working directory instead of checking out the index
+
+git checkout-index -a  
+
+
+GIT FILE LIFECYCLE 
+- UNTRACKED
+- MODIFIED
+- STAGED 
+- UNMODIFIED
+
+- UNTRACKED
+ This are files that have not yet been staged, they are flagged as untracked files and they are normally red in colour 
+use this command to find out:
+
+git status
+
+git add <filename> to add them in the stage are 
+
+- MODIFEID
+  They are files that changes have been made to them 
+
+- STAGED 
+This are files that have left the untracked flagged now in the stagging area wating to be committed 
+if you use this command 
+git status you will now notice that the files are in green meaning they have been stagged waiting to be committed 
+
+- UNMODIFIED
+  These are file that have left the stagged area now moved to the unmodified area 
+git commit -m <description>
+
+
+BRANCH IN GIT 
+
+Branch is just a text reference to a commit 
+
+BRANCH COMMANDS 
+git branch  - List all local branches
+git branch <name> - Create new branch
+git checkout -b <name> Change to a new branch
+git branch -d <name>  Delete an existing branch
+git branch -m <old-name> <new-name> change the name of an existing branch 
+
+NOTE: IF you want to change the description of a commit, let say you made a mistake, this is the command
+
+git commit --amend -m "The description of your commit"
+
+
+CREATING BRANCHES USING THE CHECKOUT COMMAND AND AUTOMATICALLY SWITCHING TO THAT BRANCH
+
+git checkout -b <branch>
+
+eg:
+
+git checkout -b  BR-1
+
+
+
+CLONING GIT REPOSITORIES
+
+git clone <URL>
+
+eg:
+
+git clone https://github.com/leachim6/hello-world.git
+
+this syntax clone the hello-world repo including the .git file
+
+GIT DIFF 
+git diff
+ 
+This command show all the differences or changes made in a modified file
+
+
+MERGING BRANCHES 
+
+A merge is just a pointer to a specific commit.
+
+Merging is made when multiple branches are created and you want to incorporate changes to the receiving branch
+
+Types of Merge    
+
+- Fast Forward Merge
+- 3 Way Merge 
+
+FAST FORWARD MERGE 
+
+git merge <name>       --We currently have two branches main and BR-1   main is the receiving branch. checkout to the main(receiving) branch and the merge as follows.
+
+git merge BR-1
+
+You can abort/cancel a merge in case of merge conflict of any other reasons using the following commang
+
+git merge --abort
+
+GITHUB AND GITHUB REPOSIROTY
+Creating a token
+creating a branch
+editing README.txt file
+commenting on the READM.txt file 
+
+TYPES OF REPOSITORIES 
+
+-Local Repository
+-Remote Repository 
+
+Remote and local repositories are the same in terms of structure they both have the following 
+
+-Working Directory
+-Staging Area(INDEX)
+-Git Repository 
+
+WHAT HAPPENS WHEN YOU UPDATE YOUR LOCAL REPOSITORY, DOES THE REMOTE REPOSITORY UPDATE AUTOMATICALLY AS-WELL??
+
+No, when you make changes in the local repository those changes can only reflect when you *PUSH* those changes in the remote repository.
+
+When you have changes in the remote repository those changes can only reflect in the local repository when you *PULL* thoses changes in the local repository.
+
+Where comes the topic of PUSH AND PULL.
+
+WHO HAVE RIGHT TO WRITE OR MAKE CHANGES IN YOUR REMOTE REPOSITORY?
+
+Remote repository owner much grant access to the repository before any changes can be done 
+
+WHO CAN DOWNLOAD OR CLONE YOUR REMOTE REPOSITORY?
+
+If the remote repository is *PUBLIC* anyone can clone or download that repository but if the repository is PRIVATE the owner of that
+repository must grant you access before you can PULL, clone or download the repository.
+
+
+PULL
+Git PULL = GIT FETCH + Git Merge
+
+
+GIT FETCH
+ 
+Git fetch doesn't update your working directory and it also doesn't update your staging area(index), it only update your local git repository. if you wish to have that file in your local working directory you have to manually add it using the git read-tree <hash> into
+the staging area and git checkout-index -a and that file will be added directly the working directory.
+
+GIT PULL
+
+Git pull will make changes directly into your local working directory and after that it merge changes(if any) into your working directory
+
+Let say a file was created in the remote repository, after a/the git pull command it directly add that file in the working directory and the staging area(index) as well  
+
+PULL REQUEST WORKS AS FOLLOWS:
+
+1. CLONE REMOTE REPOSITORY
+
+2. THEN CHECKOUT "main" BRANCH LOCALL
+
+3. MAKE CHANGES AND COMMIT THEM IN THE "main" BRANCH IN THE REMOTE REPOSITORY 
+
+4. AFTER "git pull" LOCALL GIT WILL FETCH REMOTE CHANGES
+
+5. AFTER FERCHING GIT WILL MERGE REMOTE "main" BRANCH INTO THE LOCAL "master" (FAST FORWARD OR 3-WAY-MERGE)
+
+6. STAGING AREA AND THE LOCAL WORKING DIRECTORY WILL BE AUTOMATICALLY UPDATED AFTER MERGE 
+
+HOW ACTUALL DOES YOUR LOCAL REPOSITORY KNOWS WHERE TO PULL AND PUSH FROM? HOW YOUR LOCAL REPOSITORY IS CONNECTED TO YOUR REMOTE SERVER/REPOSITORY?
+
+By default when you clone a remote repository to your local repository git automatically creates a binding to your remote and local repository and it creates a default remotes repository for your local repository and the default name of your remote repository is called 
+"ORIGIN". When you use the command "git remote" origin appears hence clarified our claim.
+
+
+we have created a branch(feature-1) in the GitHub interface but that branch has not be shown in the command line when we use the git branch only the main branch well appear and the feature-1. when we use the following command:
+
+git branch -a         -- this will be shown, if you want to show all branch including the remote repository(origin)
+
+* main
+  remotes/origin/HEAD -> origin/main
+  remotes/origin/feature-1
+  remotes/origin/main
+
+git branch -r          --- this will be show 
+
+  origin/HEAD -> origin/main
+  origin/feature-1
+  origin/main
+
+git branch -v or git branch -vv         -- this will be shown 
+
+git branch show origin
+
+
+* main 61cf4f8 Create hello-Github.txt  -v
+
+* main 61cf4f8 [origin/main] Create hello-Github.txt -vv
+   
+
+- The SHA-1 HASH(61cf4f8) of the main branch and the name of the of the commit in the case "Create hello-GitHub.txt"
+
+
+TRACKING BRANCH
+Tracking branch is your local branch in your local git repository that is connected to a specific remote branch in your remote repository
+
+
+GIT PUSH
+
+Git push command allows you to make changes into your remote repository 
+
+let's create a new branch and then push that branch into the remote server and them delete that branch from the remote server
+
+git checkout -b temp
+
+git branch temp -a
+
+this command show the temp in the local repository but no temp in the remote server
+
+
+git push origin -u temp
+
+this command push the temp branch in the remote repository, if you refresh your GitHub you will see the new temp branch
+
+git push origin -d temp
+
+this command delete the branch from the remote server
+
+git branch -D temp
+
+this command delete the branch from the local repository 
+
+GIT SHOW-REF
+
+git show-ref 
+
+627fea7507333e736a0f0b1f6a96450561956b14 refs/heads/feature-1
+61cf4f8ebe4091d32d7929207e89784925324cbe refs/heads/main
+61cf4f8ebe4091d32d7929207e89784925324cbe refs/heads/prune
+61cf4f8ebe4091d32d7929207e89784925324cbe refs/heads/show
+61cf4f8ebe4091d32d7929207e89784925324cbe refs/remotes/origin/HEAD
+627fea7507333e736a0f0b1f6a96450561956b14 refs/remotes/origin/feature-1
+61cf4f8ebe4091d32d7929207e89784925324cbe refs/remotes/origin/main
+
+this command show all the local branches and the origin/ remote branches
+
+git show-ref main
+
+61cf4f8ebe4091d32d7929207e89784925324cbe refs/heads/main	       - - The local branch
+61cf4f8ebe4091d32d7929207e89784925324cbe refs/remotes/origin/main      - - The remote branch
+
+git show-ref feature-1
+627fea7507333e736a0f0b1f6a96450561956b14 refs/heads/feature-1           - The local branch
+627fea7507333e736a0f0b1f6a96450561956b14 refs/remotes/origin/feature-1  - The remote branch
+
+
+this command show the references of the remote and local branches 
+
+CLONING AND FORKING
+
+FORKING 
+Forking is a copy of other peoples repository
+
+UPSTREAM
+Upstream is just a remote server in the parent repository that has been forked. Origin points to Forked repository upstream points to parent repository.
+
+Git Fetch Upstream
+git fetch upstream -v 
+
+when you performed that fetch operation, remember only your git repository will be changed, your staging area and working directory will remain untouched.
+
+PULLING CHANGES FROM PARENT REPOSITORY TO FORKED REMOSITORY IN YOU LOCAL MACHINE 
+git pull upstream main -v
+
+git push 
+
+this command push the updated changes made from the parent repository to the forked repo in your GitHub server.
+
+
+TAGS CI/CD - Continuous Integration / Continuous Development
+
+A tag is a named reference to a specific commit, often used to mark important points like releases or versions.
+
+Example:
+v1.0 points to the commit where version 1.0 was finished.
+
+
+
+SEMATIC VERSIONING
+Its is a common approach for numbering every version of a software
+
+v5.    1 .     3                v5.1.3 or 5.1.3 both are the same
+ |   
+Major  Minor   Patch
+
+Major Versioning
+When you make a major changes to the software and make that version incompatible to the previous version you increment the major software number as shown below
+
+v6.0.o or 6.0.0 
+
+-notice we have reset the minor and patch whenever we make a major change to a software 
+
+Minor Versioning 
+When you make any minor change to the software that is still compatible to the previous version you leave the major software number then change the minor software number to the required change and then reset the patch as follows
+
+v5.2.0  5.2.0
+notice we incremented the minor and then reset the patch
+
+PATCH Versioning 
+Patches are just small changes or adjustment to the software, if you fix a bug then it's a patch to that software. versioning of a patch is as follows
+
+v5.2.1   |   5.2.1
+
+PRE-RELESED SOFTWARE VERSIONS
+If you are developing any new feature and have an actual staging environment where you test new features you can pre-released software versions
+
+v5.2.1-alpha or v5.2.1-beta v5.2.1-1.3  |  5.2.1-alpha   5.2.1-beta  5.2.1-1.3
+
+The alpha, beta, 1.3 show that they are pre-released version of that specific software version that they are attached to. when you are done testing you can release that version now as follows
+
+v6.0.0 if it was a major change v5.3.0 if it was a minor change or a patch as v5.2.2  
+
+GIT TAGS
+1. Lightweight Tags 
+2. Annotated Tags
+
+LIGHTWEIGHT TAGS
+
+Lightweight tag is a simple name pointer to a commit, like a bookmark.
+
+Lightweight tags can be added using the following command
+
+git tag v1.0.0
+
+lightweight tags are stored in:
+
+.git/refs/tags
+
+
+ANNOTATED TAGS
+These are used for full object storing a tag name, message, author, and date.
+
+git tag -a v1.0.0 -m "New Annotated Tag"
+
+They are stored in:
+
+.git/refs/tags and .git/objects
+
+-stores tag name
+-stores tag author and message
+
+git tag -v v1.0.0 This command shows you the content(tag name, author name, date etc) of the annotated tag
+
+NOTE: The previous command can not be used on lightweight because lightweight do not store authors name and date 
+
+
+PUSHING OF TAGS IN THE REMOTE REPOSITORY
+When you push the content of your local repository are do not get pushed by default, use this command to push tags in the remote repository
+
+git push --tags -v
+
+Use this command if there are many tags in the repo and you want to push only one.
+
+git push -v origin v1.0.1
+
+
+14 REBASING
+
+Rebasing means moving or reapplying commits on top of another base commit.
+
+ Short definition:
+It rewrites commit history to create a linear sequence of commits
+
+WHAT DOES IT MEAN BY MAKING IT LINEAR
+In merging. there are commits that have multiple parents, but with rebasing every commit has just a single parent
+
+Why people use it:
+
+To make history cleaner and easier to follow
+
+To avoid merge commits cluttering the log
+
+NOTE: Please never use rebasing on public branches like master/main or release because rebasing actually disrupt operations and changes history. It create brand new commits and remove the previous commit history
+
+DIFFERENCE BETWEEN MERGING AND REBASING
+
+MERGING
+
+Combines histories from two branches.
+
+Creates a merge commit to join them.
+
+Keeps the true history with all branch paths.
+
+
+REBASING
+
+Moves your commits to start on top of another branch.
+
+Rewrites history into a straight line.
+
+No merge commit.
+
+IN SIMPLE TERMS:
+Merging combines histories. Rebasing rewrites history to look linear.
+
+
+
+ 
+
+
+
+
+
+ 
+ 
+
+
+
+
+
+
